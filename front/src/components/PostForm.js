@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPost } from '../services/postsService';
 
 import '../styles/PostForm.css';
 
@@ -12,37 +13,34 @@ export default function PostForm(props) {
   const [IsLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  async function handleSubmit(event) {
 
-    setIsLoading(true);
+    try {
+      event.preventDefault();
 
-    fetch('http://localhost:3001/posts', {
-      method: 'POST',
-      body: JSON.stringify({
-        content: history,
-        userName,
-      }),
+      setIsLoading(true);
+      setErrorMessage(null);
 
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+      const response = await createPost(history, userName);
 
-      .then(() => {
+      if (response === true) {
         props.onSubmit({ history, userName });
 
         setHistory('');
         setUserName('');
-      })
 
-      .catch(() => {
-        setErrorMessage("Ocorreu um erro ao cadastrar o post!")
-      })
+        return;
+      }
 
-      .finally(() => {
-        setIsLoading(false);
-      })
+      setErrorMessage(response);
+
+    } catch {
+      setErrorMessage("Ocorreu um erro ao cadastrar o post!");
+
+    } finally {
+      setIsLoading(false);
+    };
+
 
     // props.onSubmit({ history, userName });
 

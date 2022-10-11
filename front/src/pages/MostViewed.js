@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"; // useEffect (React Hook)
 
 import Feed from '../components/Feed';
+import { getMostViewedPostsList } from "../services/postsService";
 
 export default function MostViewed() {
   const [posts, setPosts] = useState([]);
@@ -8,28 +9,30 @@ export default function MostViewed() {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:3001/posts/most-viewed')
-      .then(async (response) => {
-        if (!response.ok) {
+
+    async function loadPosts() {
+
+      try {
+
+        const postsList = await getMostViewedPostsList();
+
+        if (!postsList) {
           setHasError(true);
           return;
         }
 
-        const body = await response.json();
+        setPosts(postsList);
 
-        setPosts(body.map((post) => ({
-          ...post,
-          publishedAt: new Date(post.publishedAt),
-        })));
-      })
-
-      .catch(() => {
+      } catch {
         setHasError(true);
-      })
 
-      .finally(() => {
+      } finally {
         setIsLoading(false);
-      });
+      };
+
+    }
+
+    loadPosts();
 
   }, []); // [] array de dependência
 
